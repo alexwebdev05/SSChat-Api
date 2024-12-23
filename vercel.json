@@ -6,11 +6,7 @@
         "use": "@vercel/node"
       }
     ],
-    "routes": [
-      {
-        "src": "/(.*)",
-        "dest": "/dist/index.js"
-      }
-    ]
+    "buildCommand": "npm install && npm run build",
+    "outputDirectory": "dist"
   }
   
