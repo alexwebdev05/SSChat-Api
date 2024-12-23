@@ -31,9 +31,9 @@
         "prettier": "prettier --write \"**/*.ts\" \"**/*.js\" \"**/*.json\" \"**/*.css\"",
         "prettify": "pretty-quick --staged",
         "dev": "nodemon src/index.ts",
-        "build": "tsc",
+        "build": "npm run build",
         "vercel-build": "npm run build",
-        "start": "node dist/index.js"
+        "start": "node ./dist/index.js"
     },
     "husky": {
         "hooks": {
