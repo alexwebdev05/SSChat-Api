@@ -32,6 +32,7 @@
         "prettify": "pretty-quick --staged",
         "dev": "nodemon src/index.ts",
         "build": "tsc",
+        "vercel-build": "npm run build",
         "start": "node dist/index.js"
     },
     "husky": {
