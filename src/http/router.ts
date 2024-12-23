@@ -5,6 +5,11 @@ import { ChatController } from './controllers/chat.controller';
 
 const router = express.Router();
 
+// Title
+router.get('/', (req, res) => {
+    res.status(200).send('SSChat API');
+});
+
 // [ USER ROUTES ]
 
 // create user
