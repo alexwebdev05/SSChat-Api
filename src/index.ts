@@ -11,7 +11,7 @@ dotenv.config();
 
 const app = express();
 const httpServer = http.createServer(app);
-const PORT = process.env.HTTP;
+const PORT = process.env.PORT;
 
 // Habilitar solicitudes HTTP desde el cliente
 app.use(cors());
