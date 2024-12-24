@@ -5,7 +5,7 @@
     "description": "Describe your app here.",
     "dependencies": {
         "cors": "^2.8.5",
-        "dotenv": "^16.4.5",
+        "dotenv": "^16.4.7",
         "express": "^4.21.1",
         "express-ws": "^5.0.2",
         "pg": "^8.13.0",
@@ -19,7 +19,7 @@
         "@types/cors": "^2.8.17",
         "@types/express": "^5.0.0",
         "@types/express-ws": "^3.0.5",
-        "@types/node": "latest",
+        "@types/node": "^22.10.2",
         "@types/pg": "^8.11.10",
         "nodemon": "^3.1.7",
         "prettier": "latest",

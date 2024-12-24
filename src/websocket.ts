@@ -1,8 +1,10 @@
 import { Server } from 'ws';
-import env from './conf/env';
 import router from './sockets/router';
+import * as dotenv from 'dotenv';
 
-const PORT = env.SOCKET;
+dotenv.config();
+
+const PORT = parseInt(process.env.SOCKET as string, 10);
 
 const wss = new Server({ port: PORT });
 
