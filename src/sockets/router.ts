@@ -8,7 +8,7 @@ const rooms: { [token: string]: Set<any> } = {};
 
 const router = (wss: Server) => {
   // En la conexión del cliente
-  wss.on('connection', (ws, req) => {
+  wss.on('connection', (ws, req) => { // Accedemos a la solicitud HTTP a través de 'req'
     console.log('Client connected');
 
     // Extraer el token del query string en la URL
@@ -42,16 +42,17 @@ const router = (wss: Server) => {
       else if (messageJson.action === 'sendmessage') {
         const response = await MessageController.sendmessage(messageJson);
         
-        // Enviar el mensaje a todos los clientes de la misma room
+        // Verificar si la room existe y reenviar el mensaje a todos los clientes de la misma room
         if (rooms[token]) {
           rooms[token].forEach(client => {
+            // Asegurarse de que el cliente está listo para recibir el mensaje
             if (client !== ws && client.readyState === ws.OPEN) {
-              client.send(JSON.stringify(response));
+              client.send(JSON.stringify(response)); // Enviar el mensaje a todos los clientes
             }
           });
         }
 
-        // Enviar la respuesta al cliente que lo envió
+        // Enviar la respuesta al cliente que lo envió también
         ws.send(JSON.stringify(response));
       }
     });
