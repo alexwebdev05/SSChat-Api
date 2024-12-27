@@ -8,11 +8,11 @@ const rooms: { [token: string]: Set<any> } = {};
 
 const router = (wss: Server) => {
   // En la conexión del cliente
-  wss.on('connection', (ws) => {
+  wss.on('connection', (ws, req) => {
     console.log('Client connected');
 
     // Extraer el token del query string en la URL
-    const urlParams = new URLSearchParams(ws.upgradeReq.url?.split('?')[1] || '');
+    const urlParams = new URLSearchParams(req.url?.split('?')[1] || '');
     const token = urlParams.get('token');
     if (!token) {
       ws.close(4000, 'Token no proporcionado');
