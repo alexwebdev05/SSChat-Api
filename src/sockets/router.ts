@@ -8,7 +8,7 @@ const rooms: { [token: string]: Set<any> } = {};
 
 const router = (wss: Server) => {
   // En la conexión del cliente
-  wss.on('connection', (ws, req) => { // Accedemos a la solicitud HTTP a través de 'req'
+  wss.on('connection', (ws, req) => {
     console.log('Client connected');
 
     // Extraer el token del query string en la URL
@@ -19,9 +19,13 @@ const router = (wss: Server) => {
       return;
     }
 
-    // Si no existe la room para este token, crearla
+    // Verificar si la room ya existe
     if (!rooms[token]) {
+      // Crear una nueva room si no existe
       rooms[token] = new Set();
+      console.log(`Room creada para el token: ${token}`);
+    } else {
+      console.log(`Cliente uniéndose a room existente para el token: ${token}`);
     }
 
     // Agregar el cliente a la room
@@ -63,6 +67,7 @@ const router = (wss: Server) => {
       if (rooms[token]) {
         rooms[token].delete(ws); // Eliminar el WebSocket de la room
         if (rooms[token].size === 0) {
+          console.log(`Room para el token ${token} eliminada porque está vacía`);
           delete rooms[token]; // Eliminar la room si ya no tiene clientes
         }
       }
