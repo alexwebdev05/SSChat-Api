@@ -1,0 +1,41 @@
+-------------------------
+----- HTTP requests -----
+-------------------------
+
+
+
+
+------------------------------
+----- Websocket requests -----
+------------------------------
+
+-- [ URL ] --
+-------------
+
+- Local -
+ws://localhost:<your port>
+
+- Hosted -
+wss//<hostname>:<your port>
+
+
+-- [ Join to a room ] --
+------------------------
+
+{
+    "type": "join-room",
+    "roomToken": "<Room UUID>",
+    "clientID": "<User UUID>"
+}
+
+
+-- [ Send message on a room ] --
+--------------------------------
+
+{
+    "type": "send-room-message",
+    "roomToken": "<Room UUID>",
+    "clientID": "<Sender UUID>",
+    "message": "<Message>"
+}
+

@@ -1,0 +1,23 @@
+------------------------
+----- Code explain -----
+------------------------
+
+---- English ----
+-----------------
+
+---- Spanish ----
+-----------------
+
+--- Explicación general ---
+Buena, te voy a hacer una explicacion resumida y sin muchos tecnicismos de como funciona esta api.
+
+En primer lugar, esta api esta dividida en dos, una es para peticiones http convencionales como get y post, y la otra parte de conexiones websocket.
+
+En el apartado http convencional se aplica un modelo vista controlador tipico, en el un router recive la peticion http y en vase a la peticion lo manda
+a un controlador, ese controlador verifica que el contenido se ajusta al tipado necesario para la funcion y en consecuencia manda la peticion al modelo,
+este se encargara de toda la logica ya sea hacer un insert en la base de datos o lo que fuera necesario, despues le dara una respuesta al controlador, la
+cual sera mandada al router y del router al cliente.
+
+En el apartado del websocket tambien se aplica un modelo vista controlador mero de una manera mas atipica. El cliente se conectara al websocket pero solo
+conectandose no puede hacer nada, tiene que unirse a una sala, para ello mandara un json con el tipo de accion que quiere hacer, el token del chat, el
+token del usuario, y sera añadido automaticamente a la sala en la cual los mensajes que mande seran enviados a todos los usuarios de la sala.
