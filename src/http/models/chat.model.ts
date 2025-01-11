@@ -33,11 +33,11 @@ export class ChatModel {
     }
 
     // Get chats
-    static async getChats(data: Omit<IChat, 'id'> & {user: string}) {
+    static async getChats(data: Omit<IChat, 'user2'> & {user: string}) {
         const client = await dbConnect();
 
         try {
-            const username = data.user; 
+            const username = data.user1; 
             const response = await client.query(
                 'SELECT * FROM chats WHERE user1 = $1 OR user2 = $2',
                 [username, username]

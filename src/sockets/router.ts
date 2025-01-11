@@ -88,8 +88,6 @@ const router = (wss: Server) => {
         // On disconnect
         socket.on('close', async () => {
 
-            
-
             // Remove client from connected clients
             if (clientID) {
 
@@ -99,40 +97,9 @@ const router = (wss: Server) => {
 
                 // Remove client from rooms
                 const leave = await roomController.leaveRoom(socket, clientID);
-
-
             }
-            
-            
-
         })
-
-
-
     });
 };
 
 export default router;
-
-// On receive a message
-// socket.on('message', async (message) => {
-//     const messageJson = JSON.parse(message.toString());
-
-//     // Get messages
-//     if ( messageJson.action == "getmessages" ) {
-//         const response = await MessageController.getmessages(messageJson)
-//         socket.send(JSON.stringify(response));
-//     }
-    
-//     // Send messages
-//     else if ( messageJson.action == "sendmessage" ) {
-//         const response = await MessageController.sendmessage(messageJson)
-//         socket.send(JSON.stringify(response));
-//     }
-
-// On Log out
-// socket.on('close', () => {
-//     console.log('Client disconnected');
-// });
-
-// });

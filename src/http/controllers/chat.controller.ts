@@ -28,6 +28,4 @@ export class ChatController {
             console.log('[ SERVER ] Error getting chats at controller: ', error)
         }
     }
-
-
 }
