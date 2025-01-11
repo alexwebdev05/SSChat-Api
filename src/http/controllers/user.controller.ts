@@ -24,7 +24,7 @@ export class UserController {
             const data: Omit<IUser, 'id' | 'username' | 'photo'> = req.body;
             const dataChecker = await UserModel.getOne(data);
             console.log('[ SERVER ] New client has been checked: ' + dataChecker);
-            res.status(201).json({ user: dataChecker.username, check: "Success" });
+            res.status(201).json({ username: dataChecker.username, "photo": dataChecker.photo, "token": dataChecker.token });
 
         } catch(error) {
             console.log('[ SERVER ] Error checking the user at controller: ', error)
