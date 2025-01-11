@@ -28,6 +28,7 @@ export class UserModel {
         
     }
 
+    // Get one
     static async getOne(data: Omit<IUser, 'id' | 'username' | 'photo'>): Promise<IUser> {
         const { email, password } = data
         const client = await dbConnect();
@@ -48,8 +49,24 @@ export class UserModel {
         }
     }
 
-    static async getImg() {
-        
-    }
+    // Check token
+    static async checktoken(data: Omit<IUser, 'password' | 'username' | 'email'>): Promise<IUser> {
+        const { token } = data
+        const client = await dbConnect();
+
+        try {
+            const result = await client.query<IUser>(
+                'SELECT * FROM users WHERE token = $1',
+                [token]
+            )
+            return result.rows[0]
+
+        } catch(error) {
+            console.log('[ SERVER ] Failed to check token at model: ' + error)
+            throw error
+        } finally {
+            await client.end();
+        }
+    }   
 
 }

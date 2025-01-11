@@ -3,8 +3,8 @@ import { UUID } from "crypto"
 export interface IUser {
     id?: number,
     username: Text,
-    email: Text,
-    password: Text,
+    email?: Text,
+    password?: Text,
     token: UUID
     photo?: Text
 }

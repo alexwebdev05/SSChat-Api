@@ -18,6 +18,9 @@ router.post('/users/registeruser', UserController.registeruser);
 // Check user
 router.post('/users/checkuser', UserController.checkuser)
 
+// Check token
+router.post('/users/checkuser', UserController.checktoken)
+
 // [ CHAT ROUTES ]
 
 // New chat
