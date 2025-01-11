@@ -19,7 +19,7 @@ router.post('/users/registeruser', UserController.registeruser);
 router.post('/users/checkuser', UserController.checkuser)
 
 // Check token
-router.post('/users/checkuser', UserController.checktoken)
+router.post('/users/ckecktoken', UserController.checktoken)
 
 // [ CHAT ROUTES ]
 
