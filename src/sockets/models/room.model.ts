@@ -12,6 +12,22 @@ interface User {
 }
 
 export class roomModel {
+
+    static getMessages = async (clientID: UUID, otherClientID: UUID) => {
+        const client = await dbConnect();
+
+        try {
+            const response = await client.query(
+                'SELECT * FROM messages WHERE (sender = $1 OR receiver = $1) AND (sender = $2 OR receiver = $2);',
+                [clientID, otherClientID]
+            )
+
+            return response.rows;
+        } catch(error) {
+            console.log('[ SERVER ] Failed to get messages at model: ' + error);
+        }
+    }
+
     static sendMessage = async (clientID: UUID, roomToken: UUID, chatMessage: string) => {
         const client = await dbConnect();
         

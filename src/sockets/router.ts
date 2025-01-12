@@ -10,95 +10,106 @@ import { Client } from './interfaces';
 const connectedClients: Map<UUID, Client> = new Map();
 
 const router = (wss: Server) => {
-
     // On connect
     wss.on('connection', (socket: WebSocket) => {
         let clientID: UUID | null = null;
 
         // Receive client message
         socket.on('message', async (data: string) => {
-
             try {
-                const message = JSON.parse(data)
+                const message = JSON.parse(data);
                 clientID = message.clientID;
-                
-                // Message type manager
+
+                // Validate required fields for specific actions
+                if (!clientID) {
+                    socket.send(JSON.stringify({ type: 'error', message: 'Client ID is required.' }));
+                    return;
+                }
+
                 switch (message.type) {
-                    
                     // On connect
                     case 'connect': {
-                        
-
-                        // Verify client ID
-                        if (!clientID) {
-                            socket.send(JSON.stringify({ type: 'error', message: 'Client ID is required.' }));
-                            return;
-                        }
-                        // Add client to connected clients
                         connectedClients.set(clientID, { id: clientID, socket });
-                        socket.send(JSON.stringify({ type: 'connected', message: `Welcome, client ${clientID}` }));
+                        socket.send(
+                            JSON.stringify({ type: 'connected', message: `Welcome, client ${clientID}` })
+                        );
                         break;
                     }
 
                     // Join room
                     case 'join-room': {
-                        
-
-                        // Verify clietn ID
-                        if (!clientID) {
-                            socket.send(JSON.stringify({ type: 'error', message: 'Client ID is required.' }));
-                            return;
-                        }
-
-                        // Call room controller to join room
                         const response = await roomController.joinRoom(socket, message, clientID);
 
-                        // Error manager
                         if (response.error) {
                             socket.send(JSON.stringify({ type: 'error', message: response.message }));
                         } else {
-                            socket.send(JSON.stringify({ type: 'joined-room', message: `Joined room successfully.` }));
+                            socket.send(
+                                JSON.stringify({ type: 'joined-room', message: `Joined room successfully.` })
+                            );
+                        }
+                        break;
+                    }
+
+                    // Get messages
+                    case 'get-messages': {
+                        const otherClientID = message.otherClientID;
+
+                        if (!otherClientID) {
+                            socket.send(
+                                JSON.stringify({ type: 'error', message: 'Other client ID is required.' })
+                            );
+                            return;
+                        }
+
+                        const response = await roomController.getMessages(socket, clientID, otherClientID);
+
+                        if (response.error) {
+                            socket.send(JSON.stringify({ type: 'error', message: response.message }));
                         }
                         break;
                     }
 
                     // Send room message
                     case 'send-room-message': {
-                        if (!clientID) {
-                            socket.send(JSON.stringify({ type: 'error', message: 'Client ID is required.' }));
+                        const otherClientID = message.otherClientID;
+
+                        if (!otherClientID) {
+                            socket.send(
+                                JSON.stringify({ type: 'error', message: 'Other client ID is required.' })
+                            );
                             return;
                         }
 
                         try {
                             await roomController.sendMessage(socket, clientID, message);
-                            break;
-
+                            socket.send(
+                                JSON.stringify({ type: 'sent-message', message: 'Message sent successfully.' })
+                            );
                         } catch (error) {
-                            socket.send(JSON.stringify({ type: 'error', message: 'Failed to send message.' }));
+                            socket.send(
+                                JSON.stringify({ type: 'error', message: 'Failed to send message.' })
+                            );
                         }
+                        break;
+                    }
 
+                    default: {
+                        socket.send(JSON.stringify({ type: 'error', message: 'Invalid message type.' }));
                     }
                 }
             } catch (error) {
                 socket.send(JSON.stringify({ type: 'error', message: 'Invalid message format.' }));
             }
-
-        })
+        });
 
         // On disconnect
         socket.on('close', async () => {
-
-            // Remove client from connected clients
             if (clientID) {
-
-                // Remove client from connected clients
-                connectedClients.delete(clientID)
-                console.log(`[ SERVER ]Client disconnected: ${clientID}`);
-
-                // Remove client from rooms
-                const leave = await roomController.leaveRoom(socket, clientID);
+                connectedClients.delete(clientID);
+                console.log(`[ SERVER ] Client disconnected: ${clientID}`);
+                await roomController.leaveRoom(socket, clientID);
             }
-        })
+        });
     });
 };
 

@@ -9,6 +9,7 @@ type Message = {
     message?: string
 }
 
+
 type RoomControllerResponse = {
     error: boolean;
     message: string;
@@ -64,6 +65,36 @@ export class roomController {
             return { error: true, message: 'Failed to join room.' };
         }
     
+    }
+
+    
+    // Get messages
+    static getMessages = async (socket: WebSocket, clientID: UUID, otherClientID: UUID): Promise<RoomControllerResponse> => {
+        try {
+            // Check client ID
+            if (!clientID) {
+                socket.send(JSON.stringify({ type: 'error', message: 'You must connect first.' }));
+                return { error: true, message: 'Client ID is required.' };
+            }
+
+            // Check other client ID
+            if (!otherClientID) {
+                socket.send(JSON.stringify({ type: 'error', message: 'Other client ID is required.' }));
+                return { error: true, message: 'Other client ID is required.' };
+            }
+
+            // Get messages from database
+            const messages = await roomModel.getMessages(clientID, otherClientID);
+
+            // Send messages to client
+            socket.send(JSON.stringify({ type: 'obtained-messages', messages }));
+
+            return { error: false, message: 'Messages retrieved successfully' };
+        } catch(error) {
+            console.log('[ SERVER ] Failed to get messages at controller: ' + error);
+            return { error: true, message: 'Failed to get messages.' };
+            
+        }
     }
 
     // Send message
