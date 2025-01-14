@@ -98,7 +98,7 @@ export class roomController {
     }
 
     // Send message
-    static sendMessage = async (socket: WebSocket, clientID: UUID, message: Message): Promise<RoomControllerResponse> => {
+    static sendMessage = async (socket: WebSocket, clientID: UUID, message: Message, otherClientID: UUID): Promise<RoomControllerResponse> => {
         try {
             // Check client ID
             if (!clientID) {
@@ -128,7 +128,7 @@ export class roomController {
             }
 
             // Send message to database
-            await roomModel.sendMessage(clientID, roomToken, chatMessage)
+            await roomModel.sendMessage(clientID, roomToken, chatMessage, otherClientID)
 
             room.clients.forEach(async client => {
                 // Send message to all clients in the room

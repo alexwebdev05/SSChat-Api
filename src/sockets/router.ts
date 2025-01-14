@@ -81,7 +81,7 @@ const router = (wss: Server) => {
                         }
 
                         try {
-                            await roomController.sendMessage(socket, clientID, message);
+                            await roomController.sendMessage(socket, clientID, message, otherClientID);
                             socket.send(
                                 JSON.stringify({ type: 'sent-message', message: 'Message sent successfully.' })
                             );
