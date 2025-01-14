@@ -1,5 +1,6 @@
 import WebSocket, { Server } from 'ws';
 import { UUID } from "crypto";
+import { v4 as uuidv4 } from 'uuid';
 import { IRoom, Client } from '../interfaces';
 import { roomModel } from '../models/room.model';
 
@@ -134,6 +135,7 @@ export class roomController {
                 // Send message to all clients in the room
                 client.socket.send(JSON.stringify({ type: 'received-message', response: {
                     created_at: new Date(),
+                    id: uuidv4(),
                     message: chatMessage,
                     receiver: otherClientID,
                     sender: clientID
