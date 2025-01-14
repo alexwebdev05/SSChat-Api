@@ -84,10 +84,10 @@ export class roomController {
             }
 
             // Get messages from database
-            const messages = await roomModel.getMessages(clientID, otherClientID);
+            const response = await roomModel.getMessages(clientID, otherClientID);
 
             // Send messages to client
-            socket.send(JSON.stringify({ type: 'obtained-messages', messages }));
+            socket.send(JSON.stringify({ type: 'obtained-messages', response }));
 
             return { error: false, message: 'Messages retrieved successfully' };
         } catch(error) {
@@ -132,7 +132,13 @@ export class roomController {
 
             room.clients.forEach(async client => {
                 // Send message to all clients in the room
-                client.socket.send(JSON.stringify({ type: 'received-message', clientID, chatMessage }));
+                client.socket.send(JSON.stringify({ type: 'received-message', response: {
+                    created_at: new Date(),
+                    message: chatMessage,
+                    receiver: otherClientID,
+                    sender: clientID
+                }
+            }));
             })
 
             return { error: false, message: 'Message sent successfully' };
