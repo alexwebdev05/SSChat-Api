@@ -132,7 +132,7 @@ export class roomController {
 
             room.clients.forEach(async client => {
                 // Send message to all clients in the room
-                client.socket.send(JSON.stringify({ type: 'message', clientID, chatMessage }));
+                client.socket.send(JSON.stringify({ type: 'received-message', clientID, chatMessage }));
             })
 
             return { error: false, message: 'Message sent successfully' };

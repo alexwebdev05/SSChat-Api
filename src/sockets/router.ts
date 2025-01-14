@@ -36,7 +36,15 @@ const router = (wss: Server) => {
                         break;
                     }
 
+
                     // Join room
+
+                    // {
+                    //     "type": "join-room",
+                    //     "roomToken": "<UUID>",
+                    //     "clientID": "<UUID>"
+                    // }
+
                     case 'join-room': {
                         const response = await roomController.joinRoom(socket, message, clientID);
 
@@ -50,7 +58,15 @@ const router = (wss: Server) => {
                         break;
                     }
 
+
                     // Get messages
+
+                    // {
+                    //     "type": "get-messages",
+                    //     "clientID": "<UUID>",
+                    //     "otherClientID": "UUID"
+                    // }
+
                     case 'get-messages': {
                         const otherClientID = message.otherClientID;
 
@@ -69,7 +85,17 @@ const router = (wss: Server) => {
                         break;
                     }
 
+
                     // Send room message
+                    // sender example
+
+                    // {
+                    //     "type": "send-room-message",
+                    //     "clientID": "<UUID>",
+                    //     "otherClientID": "<UUID>",
+                    //     "roomToken": "<UUID>",
+                    //     "message": "<Message>"    
+                    // }
                     case 'send-room-message': {
                         const otherClientID = message.otherClientID;
 
