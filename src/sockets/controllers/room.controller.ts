@@ -7,6 +7,7 @@ import { roomModel } from '../models/room.model';
 // Message
 type Message = {
     roomToken: UUID,
+    clientID: UUID,
     message?: string
 }
 
@@ -153,20 +154,42 @@ export class roomController {
     }
 
     // Leave room
-    static leaveRoom = async (socket: WebSocket, clientID: UUID) => {
-        activeRooms.forEach((room) => {
-            room.clients = room.clients.filter((client) => client.id !== clientID);
+    static leaveRoom = async (socket: WebSocket, message: Message) => {
+        try {
 
-            // Delete room if empty
-            if ( room.clients.length === 0 ) {
-                activeRooms.delete(room.id);
-            } else {
-                room.clients.forEach(client => {
-                    client.socket.send(JSON.stringify({ type: 'user-left', clientID, roomToken: room.id }));
-                });
+            // Check client ID
+            if (!message.clientID) {
+                return { error: true, message: 'clientID is required.' };
             }
 
+            // Check room
+            if (!message.roomToken) {
+                return { error: true, message: 'roomToken is required.' };
+            }
 
-        })
+            const clientID = message.clientID;
+            const roomToken = message.roomToken;
+
+            // Check if the room exists
+            const room = activeRooms.get(message.roomToken);
+            if (!room) {
+                return { error: true, message: 'Room does not exist.' };
+            }
+            
+            // Remove client from the room
+            room.clients = room.clients.filter(client => client.id !== clientID);
+            if (room.clients.length === 0) {
+                activeRooms.delete(roomToken);
+            }
+
+            console.log(`[ SERVER ] Client ${clientID} left room ${roomToken}`);
+            socket.send(JSON.stringify({ type: 'room-left', roomToken }));
+
+            return { error: false, message: 'Client left the room successfully' };
+
+        } catch(error) {
+            console.log('[ SERVER ] Failed to leave room at controller: ' + error);
+            return { error: true, message: 'Failed to leave room.' };
+        }
     }
 }

@@ -119,6 +119,21 @@ const router = (wss: Server) => {
                         break;
                     }
 
+                    // Leave room
+                    case 'leave-room': {
+                        if (!clientID) {
+                            socket.send(JSON.stringify({ type: 'error', message: 'Client ID is required.' }));
+                            return;
+                        }
+                        const response = await roomController.leaveRoom(socket, message)
+                        if (response.error) {
+                            socket.send(JSON.stringify({ type: 'error', message: response.message }));
+                        } else {
+                            socket.send(JSON.stringify({ type: 'left-room', message: `Left room successfully.` }));
+                        }
+                        break;
+                    }
+
                     default: {
                         socket.send(JSON.stringify({ type: 'error', message: 'Invalid message type.' }));
                     }
@@ -132,8 +147,6 @@ const router = (wss: Server) => {
         socket.on('close', async () => {
             if (clientID) {
                 connectedClients.delete(clientID);
-                console.log(`[ SERVER ] Client disconnected: ${clientID}`);
-                await roomController.leaveRoom(socket, clientID);
             }
         });
     });
