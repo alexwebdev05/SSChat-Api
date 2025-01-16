@@ -120,6 +120,12 @@ const router = (wss: Server) => {
                     }
 
                     // Leave room
+                    // {
+                    //     "type": "leave-room",
+                    //     "roomToken": "<UUID>",
+                    //     "clientID": "<UUID>"
+                    // }
+
                     case 'leave-room': {
                         if (!clientID) {
                             socket.send(JSON.stringify({ type: 'error', message: 'Client ID is required.' }));
