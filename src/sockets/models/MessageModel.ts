@@ -30,7 +30,11 @@ export class MessageModel {
             console.log('[ SERVER ] Failed to get messages at model: ' + error)
 
         } finally {
-            await client.end();
+            try {
+                client.release();
+            } catch (releaseError) {
+                console.error('[ SERVER ] Error releasing DB connection: ', releaseError);
+            }
         }
     }
 
