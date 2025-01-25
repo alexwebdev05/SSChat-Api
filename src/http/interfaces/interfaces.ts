@@ -1,5 +1,10 @@
 import { UUID } from "crypto"
 
+export interface IStatus {
+    status: string,
+    message: string
+}
+
 export interface IUser {
     id?: number,
     username: Text,

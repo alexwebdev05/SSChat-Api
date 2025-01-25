@@ -1,20 +1,24 @@
-import { Client } from 'pg';
+import { Pool } from 'pg';
 import * as dotenv from 'dotenv';
 
 dotenv.config();
 
+// Create a new pool
+const pool = new Pool({
+    connectionString: process.env.DB_URL,
+});
+
+// Export pool
 export const dbConnect = async () => {
 
-    const client = new Client({
-        connectionString: process.env.DB_URL,
-    })
-
+    // Connect to the database
     try {
-        await client.connect();
-        return client
+        const client = await pool.connect();
+        return client;
 
-    } catch(error) {
-        console.log('Error connecting to database', error);
+    // Handle connection error
+    } catch (error) {
+        console.error('Error connecting to database:', error);
         process.exit(1);
     }
-}
+};

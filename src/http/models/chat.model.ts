@@ -28,7 +28,11 @@ export class ChatModel {
             console.log('[ SERVER ] Failed to create new chat at model: ' + error)
             throw error
         } finally {
-            await client.end();
+            try {
+                client.release();
+            } catch (releaseError) {
+                console.error('[ SERVER ] Error releasing DB connection: ', releaseError);
+            }
         }
     }
 
@@ -50,7 +54,11 @@ export class ChatModel {
             console.log('[ SERVER ] Failed to get chats at model: ' + error);
             return { message: 'Error retrieving chats' };
         } finally {
-            await client.end();
+            try {
+                client.release();
+            } catch (releaseError) {
+                console.error('[ SERVER ] Error releasing DB connection: ', releaseError);
+            }
         }
     }
 
