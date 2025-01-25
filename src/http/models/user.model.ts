@@ -110,56 +110,66 @@ export class UserModel {
         }
     }
 
-
-    // Get one
     static async getOne(data: Omit<IUser, 'id'>): Promise<IUser | IStatus> {
-        const { email, password } = data
-
+        const { email, password } = data;
+    
         // Filters
         try {
             emailFilter.parse(email);
             passwordFilter.parse(password);
-
-        // Handle errors
         } catch (error) {
             if (error instanceof z.ZodError) {
                 throw {
                     status: 'error',
-                    message: `${error.errors.map(e => e.message).join(', ')}`
-                }
+                    message: `${error.errors.map(e => e.message).join(', ')}`,
+                };
             }
             throw error;
         }
-
+    
         // Check hashed password
         async function comparePassword(plainPassword: string, hashedPassword: string): Promise<boolean> {
             const isMatch = await bcrypt.compare(plainPassword, hashedPassword);
             return isMatch;
         }
-
-        const checkedPassword = await comparePassword(JSON.stringify(password), JSON.stringify(password));
-
+    
         // Connect to the database
         const client = await dbConnect();
         try {
-            // Check user
+            // Check user by email
             const result = await client.query<IUser>(
-                'SELECT * FROM users WHERE email = $1 AND password = $2',
-                [email, checkedPassword]
-            )
-
+                'SELECT * FROM users WHERE email = $1',
+                [email]
+            );
+    
+            if (result.rows.length === 0) {
+                throw { status: 'error', message: 'User not found.' };
+            }
+    
+            const user = result.rows[0];
+    
+            // Verifica si el campo password está definido y es de tipo string
+            if (typeof user.password !== 'string') {
+                throw { status: 'error', message: 'Password not found or invalid in database.' };
+            }
+    
+            // Comparar la contraseña proporcionada con la almacenada en la base de datos
+            const isPasswordValid = await comparePassword(JSON.stringify(password), user.password);
+    
+            if (!isPasswordValid) {
+                throw { status: 'error', message: 'Invalid password.' };
+            }
+    
             // Manage response
-            return result.rows[0]
-
-        // Handle errors
-        } catch(error: any) {
-            console.log('[ SERVER ] Failed to check user at model: ' + error)
+            return user;
+    
+        } catch (error: any) {
+            console.log('[ SERVER ] Failed to check user at model: ' + error);
             throw {
                 status: 'error',
-                message: error
-            }
-
-        // Close connection
+                message: error,
+            };
+    
         } finally {
             try {
                 client.release();
@@ -168,6 +178,8 @@ export class UserModel {
             }
         }
     }
+
+
 
     // Check token
     static async checktoken(data: Omit<IUser, 'id'>): Promise<IUser | IStatus> {
