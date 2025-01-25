@@ -1,5 +1,4 @@
 import { Request, Response } from 'express';
-import { IStatus, IUser } from '../interfaces/interfaces';
 
 import { UserModel } from '../models/user.model';
 

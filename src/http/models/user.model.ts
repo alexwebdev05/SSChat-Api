@@ -1,5 +1,6 @@
 // Dependencies
 import { z } from "zod";
+import bcrypt from 'bcrypt';
 
 // Interfaces
 import { IStatus, IUser } from "../interfaces/interfaces";
@@ -63,6 +64,16 @@ export class UserModel {
             throw error;
         }
         console.log('2')
+
+        // Hash password
+        const saltRounds = 10;
+        async function encryptPassword(password: string): Promise<string> {
+            const hashedPassword = await bcrypt.hash(password, saltRounds);
+            return hashedPassword;
+        }
+
+        const hashedPassword = await encryptPassword(JSON.stringify(password));
+
         // Connect to the database
         const client = await dbConnect();
         try {
@@ -70,7 +81,7 @@ export class UserModel {
             console.log('3')
             const result = await client.query<IUser>(
                 'INSERT INTO users (username, email, password) VALUES ($1, $2, $3) RETURNING *',
-                [username, email, password]
+                [username, email, hashedPassword]
             );
             console.log('4')
             // Manage response
@@ -120,13 +131,21 @@ export class UserModel {
             throw error;
         }
 
+        // Check hashed password
+        async function comparePassword(plainPassword: string, hashedPassword: string): Promise<boolean> {
+            const isMatch = await bcrypt.compare(plainPassword, hashedPassword);
+            return isMatch;
+        }
+
+        const checkedPassword = await comparePassword(JSON.stringify(password), JSON.stringify(password));
+
         // Connect to the database
         const client = await dbConnect();
         try {
             // Check user
             const result = await client.query<IUser>(
                 'SELECT * FROM users WHERE email = $1 AND password = $2',
-                [email, password]
+                [email, checkedPassword]
             )
 
             // Manage response
