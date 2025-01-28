@@ -52,7 +52,6 @@ export class UserModel {
             usernameFilter.parse(username);
             emailFilter.parse(email);
             passwordFilter.parse(password);
-            console.log('1')
         // Handle errors
         } catch (error) {
             if (error instanceof z.ZodError) {
@@ -63,7 +62,6 @@ export class UserModel {
             }
             throw error;
         }
-        console.log('2')
 
         // Hash password
         const saltRounds = 10;
@@ -78,12 +76,10 @@ export class UserModel {
         const client = await dbConnect();
         try {
             // Insert data
-            console.log('3')
             const result = await client.query<IUser>(
                 'INSERT INTO users (username, email, password) VALUES ($1, $2, $3) RETURNING *',
                 [username, email, hashedPassword]
             );
-            console.log('4')
             // Manage response
             return result.rows[0];
 
@@ -148,12 +144,12 @@ export class UserModel {
     
             const user = result.rows[0];
     
-            // Verifica si el campo password está definido y es de tipo string
+            // Verify if the password is not a string
             if (typeof user.password !== 'string') {
                 throw { status: 'error', message: 'Password not found or invalid in database.' };
             }
     
-            // Comparar la contraseña proporcionada con la almacenada en la base de datos
+            // Compare passwords
             const isPasswordValid = await comparePassword(JSON.stringify(password), user.password);
     
             if (!isPasswordValid) {
@@ -178,8 +174,6 @@ export class UserModel {
             }
         }
     }
-
-
 
     // Check token
     static async checktoken(data: Omit<IUser, 'id'>): Promise<IUser | IStatus> {
