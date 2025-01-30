@@ -109,61 +109,71 @@ export class UserModel {
     static async getOne(data: Omit<IUser, 'id'>): Promise<IUser | IStatus> {
         const { email, password } = data;
     
-        // Filters
+        // Validar email y contraseña
         try {
             emailFilter.parse(email);
             passwordFilter.parse(password);
         } catch (error) {
             if (error instanceof z.ZodError) {
+                // Si el error es por la contraseña (por ejemplo, es muy corta), devolver el mensaje específico
+                const passwordError = error.errors.find(e => e.path.includes("password"));
+                if (passwordError) {
+                    throw {
+                        status: 'error',
+                        message: passwordError.message
+                    };
+                }
+                // Si el error es por email u otro motivo, dar mensaje genérico
                 throw {
                     status: 'error',
-                    message: `${error.errors.map(e => e.message).join(', ')}`,
+                    message: "Usuario o contraseña incorrectos"
                 };
             }
             throw error;
         }
     
-        // Check hashed password
-        async function comparePassword(plainPassword: string, hashedPassword: string): Promise<boolean> {
-            const isMatch = await bcrypt.compare(plainPassword, hashedPassword);
-            return isMatch;
-        }
-    
-        // Connect to the database
+        // Conectar con la base de datos
         const client = await dbConnect();
         try {
-            // Check user by email
+            // Buscar usuario por email
             const result = await client.query<IUser>(
                 'SELECT * FROM users WHERE email = $1',
                 [email]
             );
     
             if (result.rows.length === 0) {
-                throw { status: 'error', message: 'User not found.' };
+                throw { status: 'error', message: "Usuario o contraseña incorrectos" };
             }
     
             const user = result.rows[0];
     
-            // Verify if the password is not a string
+            // Verificar si la contraseña en la BD es válida
             if (typeof user.password !== 'string') {
-                throw { status: 'error', message: 'Password not found or invalid in database.' };
+                throw { status: 'error', message: "Usuario o contraseña incorrectos" };
             }
     
-            // Compare passwords
-            const isPasswordValid = await comparePassword(JSON.stringify(password), user.password);
+            // Comparar contraseñas
+            const isPasswordValid = await bcrypt.compare(JSON.stringify(password), user.password);
     
             if (!isPasswordValid) {
-                throw { status: 'error', message: 'Invalid password.' };
+                throw { status: 'error', message: "Usuario o contraseña incorrectos" };
             }
     
-            // Manage response
+            // Usuario válido, devolver datos
             return user;
     
         } catch (error: any) {
-            console.log('[ SERVER ] Failed to check user at model: ' + error);
+            console.error('[ SERVER ] Failed to check user at model: ' + error);
+    
+            // Si el error ya es "Usuario o contraseña incorrectos", lo devolvemos sin cambios
+            if (error.message === "Usuario o contraseña incorrectos") {
+                throw error;
+            }
+    
+            // Cualquier otro error (errores del servidor, conexión, etc.) se devuelve tal cual
             throw {
                 status: 'error',
-                message: error,
+                message: error.message || "Error inesperado en el servidor"
             };
     
         } finally {
@@ -174,6 +184,7 @@ export class UserModel {
             }
         }
     }
+    
 
     // Check token
     static async checktoken(data: Omit<IUser, 'id'>): Promise<IUser | IStatus> {
