@@ -52,15 +52,13 @@ export class UserModel {
             usernameFilter.parse(username);
             emailFilter.parse(email);
             passwordFilter.parse(password);
+        // Handle errors
         } catch (error) {
             if (error instanceof z.ZodError) {
                 throw {
                     status: 'error',
-                    errors: error.errors.map(e => ({
-                        field: e.path.join('.'),
-                        message: e.message
-                    }))
-                };
+                    message: `${error.errors.map(e => e.message).join(', ')}`
+                }
             }
             throw error;
         }
