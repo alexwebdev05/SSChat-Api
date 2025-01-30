@@ -126,7 +126,7 @@ export class UserModel {
                 // Si el error es por email u otro motivo, dar mensaje genérico
                 throw {
                     status: 'error',
-                    message: "Usuario o contraseña incorrectos"
+                    message: "Mail or password is incorrect."
                 };
             }
             throw error;
@@ -142,21 +142,21 @@ export class UserModel {
             );
     
             if (result.rows.length === 0) {
-                throw { status: 'error', message: "Usuario o contraseña incorrectos" };
+                throw { status: 'error', message: "Mail or password is incorrect." };
             }
     
             const user = result.rows[0];
     
             // Verificar si la contraseña en la BD es válida
             if (typeof user.password !== 'string') {
-                throw { status: 'error', message: "Usuario o contraseña incorrectos" };
+                throw { status: 'error', message: "Mail or password is incorrect." };
             }
     
             // Comparar contraseñas
             const isPasswordValid = await bcrypt.compare(JSON.stringify(password), user.password);
     
             if (!isPasswordValid) {
-                throw { status: 'error', message: "Usuario o contraseña incorrectos" };
+                throw { status: 'error', message: "Mail or password is incorrect." };
             }
     
             // Usuario válido, devolver datos
@@ -165,8 +165,8 @@ export class UserModel {
         } catch (error: any) {
             console.error('[ SERVER ] Failed to check user at model: ' + error);
     
-            // Si el error ya es "Usuario o contraseña incorrectos", lo devolvemos sin cambios
-            if (error.message === "Usuario o contraseña incorrectos") {
+            // Si el error ya es "Mail or password is incorrect.", lo devolvemos sin cambios
+            if (error.message === "Mail or password is incorrect.") {
                 throw error;
             }
     
