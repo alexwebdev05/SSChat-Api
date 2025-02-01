@@ -11,7 +11,7 @@ export class ChatController {
             const data: Omit<IChat, 'id' | 'created_at'> = req.body;
             const dataInsert = await ChatModel.createChat(data);
             console.log('[ SERVER ] New chat has been created: ' + dataInsert)
-            res.status(201).json({ data: dataInsert.user1, user2: dataInsert.user2, created_at: dataInsert.created_at })
+            res.status(201).json({ data: dataInsert });
         } catch(error) {
             console.log('[ SERVER ] Error createing new chat at controller: ', error)
             throw error
