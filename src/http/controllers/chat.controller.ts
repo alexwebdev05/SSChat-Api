@@ -24,7 +24,7 @@ export class ChatController {
             const data = req.body
             const chatsData = await ChatModel.getChats(data);
             console.log(chatsData)
-            res.status(201).json({status: "Chat made successful", token: chatsData});
+            res.status(201).json(chatsData);
         } catch(error) {
             console.log('[ SERVER ] Error getting chats at controller: ', error)
         }
