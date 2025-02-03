@@ -17,10 +17,16 @@ export class ChatModel {
         // Insert chat
         try {
             // get user2 token
-            const user2Token = await client.query(
+            const user2TokenResult = await client.query(
                 'SELECT token FROM users WHERE username = $1',
                 [user2]
             )
+
+            if (user2TokenResult.rows.length === 0) {
+                throw new Error('User2 not found');
+            }
+
+            const user2Token = user2TokenResult.rows[0].token;
 
             // Insert chat query
             const result = await client.query<IChat>(
