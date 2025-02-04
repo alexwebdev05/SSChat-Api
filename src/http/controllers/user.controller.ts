@@ -29,7 +29,7 @@ export class UserController {
             const dataChecker = await UserModel.getOne(data);
             console.log('[ SERVER ] New client has been checked: ' + dataChecker);
             // Response
-            res.status(200).json({ user: dataChecker });
+            res.status(200).json(dataChecker);
 
         // Handle errors
         } catch(error) {

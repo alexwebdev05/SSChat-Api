@@ -160,7 +160,12 @@ export class UserModel {
             }
     
             // Usuario válido, devolver datos
-            return user;
+            return {
+                username: user.username,
+                email: user.email,
+                photo: user.photo,
+                token: user.token
+            }
     
         } catch (error: any) {
             console.error('[ SERVER ] Failed to check user at model: ' + error);
@@ -221,8 +226,16 @@ export class UserModel {
                 };
             }
 
-            // Manage response
-            return result.rows[0]
+            // Data
+            const user = result.rows[0]
+
+            // Send data
+            return {
+                username: user.username,
+                email: user.email,
+                photo: user.photo,
+                token: user.token
+            }
 
         } catch(error: any) {
             console.log('[ SERVER ] Failed to check token at model: ' + error)
