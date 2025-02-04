@@ -46,7 +46,7 @@ export class UserController {
             const dataChecker = await UserModel.checktoken(data);
             console.log('[ SERVER ] New client has been checked: ' + dataChecker);
             // Response
-            res.status(200).json({ message: dataChecker });
+            res.status(200).json(dataChecker);
 
         // Handle errors
         } catch(error) {
