@@ -3,7 +3,6 @@ import { UUID } from 'crypto';
 
 // Controllers
 import { roomController } from './controllers/room.controller';
-import { connectionController } from './controllers/connection.controller';
 
 import { Client } from './interfaces';
 
@@ -17,7 +16,6 @@ const router = (wss: Server) => {
 
         // Receive client message
         socket.on('message', async (data: string) => {
-
             try {
                 const message = JSON.parse(data);
                 clientID = message.clientID;
@@ -29,7 +27,6 @@ const router = (wss: Server) => {
                 }
 
                 switch (message.type) {
-
                     // On connect
                     case 'connect': {
                         connectedClients.set(clientID, { id: clientID, socket });
@@ -49,13 +46,74 @@ const router = (wss: Server) => {
                     // }
 
                     case 'join-room': {
-                        const response = await connectionController.joinRoom(socket, message, clientID);
+                        const response = await roomController.joinRoom(socket, message, clientID);
 
                         if (response.error) {
                             socket.send(JSON.stringify({ type: 'error', message: response.message }));
                         } else {
                             socket.send(
                                 JSON.stringify({ type: 'joined-room', message: `Joined room successfully.` })
+                            );
+                        }
+                        break;
+                    }
+
+
+                    // Get messages
+
+                    // {
+                    //     "type": "get-messages",
+                    //     "clientID": "<UUID>",
+                    //     "otherClientID": "<UUID>"
+                    // }
+
+                    case 'get-messages': {
+                        const otherClientID = message.otherClientID;
+
+                        if (!otherClientID) {
+                            socket.send(
+                                JSON.stringify({ type: 'error', message: 'Other client ID is required.' })
+                            );
+                            return;
+                        }
+
+                        const response = await roomController.getMessages(socket, clientID, otherClientID);
+
+                        if (response.error) {
+                            socket.send(JSON.stringify({ type: 'error', message: response.message }));
+                        }
+                        break;
+                    }
+
+
+                    // Send room message
+                    // sender example
+
+                    // {
+                    //     "type": "send-room-message",
+                    //     "clientID": "<UUID>",
+                    //     "otherClientID": "<UUID>",
+                    //     "roomToken": "<UUID>",
+                    //     "message": "<Message>"    
+                    // }
+                    case 'send-room-message': {
+                        const otherClientID = message.otherClientID;
+
+                        if (!otherClientID) {
+                            socket.send(
+                                JSON.stringify({ type: 'error', message: 'Other client ID is required.' })
+                            );
+                            return;
+                        }
+
+                        try {
+                            await roomController.sendMessage(socket, clientID, message, otherClientID);
+                            socket.send(
+                                JSON.stringify({ type: 'sent-message', message: 'Message sent successfully.' })
+                            );
+                        } catch (error) {
+                            socket.send(
+                                JSON.stringify({ type: 'error', message: 'Failed to send message.' })
                             );
                         }
                         break;
@@ -69,56 +127,15 @@ const router = (wss: Server) => {
                     // }
 
                     case 'leave-room': {
-                        const response = await connectionController.leaveRoom(socket, message)
+                        if (!clientID) {
+                            socket.send(JSON.stringify({ type: 'error', message: 'Client ID is required.' }));
+                            return;
+                        }
+                        const response = await roomController.leaveRoom(socket, message)
                         if (response.error) {
                             socket.send(JSON.stringify({ type: 'error', message: response.message }));
                         } else {
                             socket.send(JSON.stringify({ type: 'left-room', message: `Left room successfully.` }));
-                        }
-                        break;
-                    }
-
-                    // Get messages
-
-                    // {
-                    //     "type": "get-messages",
-                    //     "clientID": "<UUID>",
-                    //     "otherClientID": "<UUID>"
-                    // }
-
-                    case 'get-messages': {
-                        const otherClientID = message.otherClientID;
-
-                        const response = await roomController.getMessages(socket, clientID, otherClientID);
-
-                        if (response.error) {
-                            socket.send(JSON.stringify({ type: 'error', message: response.message }));
-                        }
-                        break;
-                    }
-
-
-                    // Send room message
-
-                    // {
-                    //     "type": "send-room-message",
-                    //     "clientID": "<UUID>",
-                    //     "otherClientID": "<UUID>",
-                    //     "roomToken": "<UUID>",
-                    //     "message": "<Message>"    
-                    // }
-
-                    case 'send-room-message': {
-                        const otherClientID = message.otherClientID;
-
-                        const response = await roomController.sendMessage(socket, clientID, message, otherClientID);
-                        
-                        if (response.error) {
-                            socket.send(JSON.stringify({ type: 'error', message: response.message }));
-                        } else {
-                            socket.send(
-                                JSON.stringify({ type: 'sent-message', message: 'Message sent successfully.' })
-                            );
                         }
                         break;
                     }

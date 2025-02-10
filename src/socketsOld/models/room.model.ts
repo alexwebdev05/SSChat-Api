@@ -1,8 +1,6 @@
 import { z } from "zod";
 import { UUID } from "crypto";
 import { dbConnect } from "../../conf/db";
-import { IRoom } from "../interfaces";
-import { v4 as uuidv4 } from 'uuid';
 
 // Token
 const tokenFilter = z
@@ -43,7 +41,7 @@ export class roomModel {
         }
     }
 
-    static sendMessage = async (clientID: UUID, roomToken: UUID, chatMessage: string, otherClientID: UUID, room: IRoom) => {
+    static sendMessage = async (clientID: UUID, roomToken: UUID, chatMessage: string, otherClientID: UUID) => {
         const client = await dbConnect();
 
         // Filters
@@ -71,18 +69,6 @@ export class roomModel {
             );
 
             console.log(`[ SERVER ] Message sent from ${clientID} to ${otherClientID}: ${chatMessage}`);
-
-            room.clients.forEach(async client => {
-                // Send message to all clients in the room
-                client.socket.send(JSON.stringify({ type: 'received-message', response: {
-                    created_at: new Date(),
-                    id: uuidv4(),
-                    message: chatMessage,
-                    receiver: otherClientID,
-                    sender: clientID
-                }
-            }));
-            })
 
         } catch (error) {
             console.log('[ SERVER ] Failed to send room message at model: ' + error);
