@@ -12,7 +12,7 @@ export class UserController {
             const newUser = await UserModel.registeruser(userData);
             console.log('[ SERVER ] New client has been created: ' + newUser);
             // Response
-            res.status(201).json({ user: newUser });
+            res.status(201).json(newUser);
 
         // Handle errors
         } catch (error) {

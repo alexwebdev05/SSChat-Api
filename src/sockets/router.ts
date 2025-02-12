@@ -4,6 +4,7 @@ import { UUID } from 'crypto';
 // Controllers
 import { messageController } from './controllers/message.controller';
 import { roomController } from './controllers/room.controller';
+import { chatController } from './controllers/chat.controller';
 
 import { Client } from './interfaces';
 
@@ -80,7 +81,38 @@ const router = (wss: Server) => {
 
                     // Create chat
 
+                    // {
+                    //     "type": "create-chat",
+                    //     "clientID": "<UUID>",
+                    //     "otherClientID": "<UUID>"
+                    // }
+
+                    case 'create-chat': {
+                        const otherClientID = message.otherClientID;
+
+                        const response = await chatController.createChat(socket, clientID, otherClientID);
+
+                        if (response.error) {
+                            socket.send(JSON.stringify({ type: 'error', message: response.message }));
+                        }
+                        break;
+                    }
+
                     // Get chats
+
+                    // {
+                    //     "type": "get-chats",
+                    //     "clientID": "<UUID>",
+                    // }
+
+                    case 'get-chats': {
+                        const response = await chatController.getChats(socket, clientID);
+
+                        if (response.error) {
+                            socket.send(JSON.stringify({ type: 'error', message: response.message }));
+                        }
+                        break;
+                    }
 
                     // Get messages
 

@@ -80,8 +80,12 @@ export class UserModel {
                 'INSERT INTO users (username, email, password) VALUES ($1, $2, $3) RETURNING *',
                 [username, email, hashedPassword]
             );
+            
             // Manage response
-            return result.rows[0];
+            return {
+                status: 'success',
+                message: 'User registered successfully.'
+            }
 
         // Handle duplication and other errors
         } catch (error: any) {

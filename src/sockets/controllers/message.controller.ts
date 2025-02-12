@@ -54,7 +54,6 @@ export class messageController {
         } catch(error) {
             console.log('[ SERVER ] Failed to get messages at controller: ' + error);
             return { error: true, message: 'Failed to get messages.' };
-            
         }
     }
 
