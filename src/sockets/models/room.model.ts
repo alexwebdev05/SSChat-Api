@@ -1,91 +1,56 @@
-import { z } from "zod";
+import WebSocket from 'ws';
 import { UUID } from "crypto";
-import { dbConnect } from "../../conf/db";
-import { IRoom } from "../interfaces";
-import { v4 as uuidv4 } from 'uuid';
+import { IRoom, Client } from '../interfaces';
 
-// Token
-const tokenFilter = z
-    .string()
-    .uuid({
-        message: 'Invalid token.'
-    });
+type RoomControllerResponse = {
+    error: boolean;
+    message: string;
+};
+
+// Map of active rooms
+const activeRooms: Map<UUID, IRoom> = new Map();
 
 export class roomModel {
+    static joinRoom = async (socket: WebSocket, clientID: UUID, roomToken: UUID): Promise<RoomControllerResponse> => {
+    
+        let room = activeRooms.get(roomToken);
+        if (!room) {
+            // Create new room
+            room = {id: roomToken, clients: [] as Client[]}
+            activeRooms.set(roomToken, room);
+        }
 
-    static getMessages = async (clientID: UUID, otherClientID: UUID) => {
-        const client = await dbConnect();
+        // Add clients
+        const isAlreadyInRoom = room.clients.find((client) => client.id === clientID);
+        if (!isAlreadyInRoom) {
+            room.clients.push({ id: clientID, socket });
+        }
 
-        // Filters
-        try {
-            tokenFilter.parse(clientID);
-            tokenFilter.parse(otherClientID);
-        // Handle errors
-        } catch (error) {
-            if (error instanceof z.ZodError) {
-                throw {
-                    status: 'error',
-                    message: `${error.errors.map(e => e.message).join(', ')}`
-                }
+        // Notify clients
+        room.clients.forEach(client => {
+            if (client.id !== clientID) {
+                client.socket.send(JSON.stringify({ type: 'user-joined', clientID, roomToken }));
             }
-            throw error;
-        }
+        });
 
-        try {
-            const response = await client.query(
-                'SELECT * FROM messages WHERE (sender = $1 OR receiver = $1) AND (sender = $2 OR receiver = $2);',
-                [clientID, otherClientID]
-            )
+        console.log(`[ SERVER ] Client ${clientID} joined room ${roomToken}`);
+        socket.send(JSON.stringify({ type: 'room-joined', roomToken }));
 
-            return response.rows;
-        } catch(error) {
-            console.log('[ SERVER ] Failed to get messages at model: ' + error);
-        }
+        return { error: false, message: 'Client joined successfully' };
     }
 
-    static sendMessage = async (clientID: UUID, roomToken: UUID, chatMessage: string, otherClientID: UUID, room: IRoom) => {
-        const client = await dbConnect();
+    static leaveRoom = async (socket: WebSocket, clientID: UUID, roomToken: UUID, room: IRoom): Promise<RoomControllerResponse> => {
 
-        // Filters
-        try {
-            tokenFilter.parse(clientID);
-            tokenFilter.parse(otherClientID);
-            tokenFilter.parse(roomToken);
-            z.string().nonempty().parse(chatMessage);
-        // Handle errors
-        } catch (error) {
-            if (error instanceof z.ZodError) {
-                throw {
-                    status: 'error',
-                    message: `${error.errors.map(e => e.message).join(', ')}`
-                }
-            }
-            throw error;
-        }
-        
-        try {
-            // Insert message to database
-            await client.query(
-                'INSERT INTO messages (sender, receiver, message) VALUES ($1, $2, $3)',
-                [clientID, otherClientID, chatMessage]
-            );
+    // Remove client from the room
+    room.clients = room.clients.filter(client => client.id !== clientID);
+    if (room.clients.length === 0) {
+        activeRooms.delete(roomToken);
+    }
 
-            console.log(`[ SERVER ] Message sent from ${clientID} to ${otherClientID}: ${chatMessage}`);
+    console.log(`[ SERVER ] Client ${clientID} left room ${roomToken}`);
+    socket.send(JSON.stringify({ type: 'room-left', roomToken }));
 
-            room.clients.forEach(async client => {
-                // Send message to all clients in the room
-                client.socket.send(JSON.stringify({ type: 'received-message', response: {
-                    created_at: new Date(),
-                    id: uuidv4(),
-                    message: chatMessage,
-                    receiver: otherClientID,
-                    sender: clientID
-                }
-            }));
-            })
+    return { error: false, message: 'Client left the room successfully' };
 
-        } catch (error) {
-            console.log('[ SERVER ] Failed to send room message at model: ' + error);
-        }
     }
 }

@@ -2,8 +2,8 @@ import WebSocket, { Server } from 'ws';
 import { UUID } from 'crypto';
 
 // Controllers
+import { messageController } from './controllers/message.controller';
 import { roomController } from './controllers/room.controller';
-import { connectionController } from './controllers/connection.controller';
 
 import { Client } from './interfaces';
 
@@ -49,7 +49,7 @@ const router = (wss: Server) => {
                     // }
 
                     case 'join-room': {
-                        const response = await connectionController.joinRoom(socket, message, clientID);
+                        const response = await roomController.joinRoom(socket, message, clientID);
 
                         if (response.error) {
                             socket.send(JSON.stringify({ type: 'error', message: response.message }));
@@ -69,7 +69,7 @@ const router = (wss: Server) => {
                     // }
 
                     case 'leave-room': {
-                        const response = await connectionController.leaveRoom(socket, message)
+                        const response = await roomController.leaveRoom(socket, message)
                         if (response.error) {
                             socket.send(JSON.stringify({ type: 'error', message: response.message }));
                         } else {
@@ -77,6 +77,10 @@ const router = (wss: Server) => {
                         }
                         break;
                     }
+
+                    // Create chat
+
+                    // Get chats
 
                     // Get messages
 
@@ -89,7 +93,7 @@ const router = (wss: Server) => {
                     case 'get-messages': {
                         const otherClientID = message.otherClientID;
 
-                        const response = await roomController.getMessages(socket, clientID, otherClientID);
+                        const response = await messageController.getMessages(socket, clientID, otherClientID);
 
                         if (response.error) {
                             socket.send(JSON.stringify({ type: 'error', message: response.message }));
@@ -111,7 +115,7 @@ const router = (wss: Server) => {
                     case 'send-room-message': {
                         const otherClientID = message.otherClientID;
 
-                        const response = await roomController.sendMessage(socket, clientID, message, otherClientID);
+                        const response = await messageController.sendMessage(socket, clientID, message, otherClientID);
                         
                         if (response.error) {
                             socket.send(JSON.stringify({ type: 'error', message: response.message }));

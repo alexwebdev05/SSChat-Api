@@ -1,6 +1,5 @@
 import WebSocket from 'ws';
 import { UUID } from "crypto";
-import { v4 as uuidv4 } from 'uuid';
 import { IRoom, Client } from '../interfaces';
 import { roomModel } from '../models/room.model';
 
@@ -21,91 +20,76 @@ type RoomControllerResponse = {
 const activeRooms: Map<UUID, IRoom> = new Map();
 
 export class roomController {
-    
-    // Get messages
-    static getMessages = async (socket: WebSocket, clientID: UUID, otherClientID: UUID): Promise<RoomControllerResponse> => {
+
+    // Join room
+    static joinRoom = async (socket: WebSocket, message: Message, clientID: UUID): Promise<RoomControllerResponse> => {
+
         try {
-
-            if (!otherClientID) {
-                socket.send(
-                    JSON.stringify({ type: 'error', message: 'Other client ID is required.' })
-                );
-                return { error: true, message: 'Other client ID is required.' };
-            }
-
-            // Check client ID
+            // Check the client id
             if (!clientID) {
-                socket.send(JSON.stringify({ type: 'error', message: 'You must connect first.' }));
-                return { error: true, message: 'Client ID is required.' };
+                return { error: true, message: 'clientID is required.' };
             }
 
-            // Check other client ID
-            if (!otherClientID) {
-                socket.send(JSON.stringify({ type: 'error', message: 'Other client ID is required.' }));
-                return { error: true, message: 'Other client ID is required.' };
+            // Check the room id
+            const roomToken = message.roomToken;
+            if (!roomToken) {
+                return { error: true, message: 'roomToken is required.' };
             }
 
-            // Get messages from database
-            const response = await roomModel.getMessages(clientID, otherClientID);
+            // Check if the room exists
+            let room = activeRooms.get(roomToken);
+            if (!room) {
+                // Create new room
+                room = {id: roomToken, clients: [] as Client[]}
+                activeRooms.set(roomToken, room);
+            }
+
+            const response = await roomModel.joinRoom(socket, clientID, roomToken);
 
             // Send messages to client
             socket.send(JSON.stringify({ type: 'obtained-messages', response }));
 
             return { error: false, message: 'Messages retrieved successfully' };
-        } catch(error) {
-            console.log('[ SERVER ] Failed to get messages at controller: ' + error);
-            return { error: true, message: 'Failed to get messages.' };
-            
+
+        } catch (error) {
+            return { error: true, message: 'Failed to join room.' };
         }
+    
     }
 
-    // Send message
-    static sendMessage = async (socket: WebSocket, clientID: UUID, message: Message, otherClientID: UUID): Promise<RoomControllerResponse> => {
+    // Leave room
+    static leaveRoom = async (socket: WebSocket, message: Message) => {
         try {
 
-            if (!otherClientID) {
-                socket.send(
-                    JSON.stringify({ type: 'error', message: 'Other client ID is required.' })
-                );
-                return { error: true, message: 'Other client ID is required.' };
-            }
-
             // Check client ID
-            if (!clientID) {
-                socket.send(JSON.stringify({ type: 'error', message: 'You must connect first.' }));
-                return { error: true, message: 'ClientID is required.' };
+            if (!message.clientID) {
+                return { error: true, message: 'clientID is required.' };
             }
 
-            // Check room ID and message
-            const { roomToken, message: chatMessage } = message;
-            if (!roomToken || !chatMessage) {
-                socket.send(JSON.stringify({ type: 'error', message: 'Room ID and message are required.' }));
+            // Check room
+            if (!message.roomToken) {
                 return { error: true, message: 'roomToken is required.' };
             }
 
-            // Check if room exists
-            let room = activeRooms.get(roomToken);
+            const clientID = message.clientID;
+            const roomToken = message.roomToken;
+
+            // Check if the room exists
+            const room = activeRooms.get(message.roomToken);
             if (!room) {
-                room = { id: roomToken, clients: [] as Client[] };
-                socket.send(JSON.stringify({ type: 'error', message: 'Room does not exist.' }));
                 return { error: true, message: 'Room does not exist.' };
             }
 
-            // Check if the client is in the room
-            const isInRoom = room.clients.find((client) => client.id === clientID);
-            if (!isInRoom) {
-                return { error: true, message: 'Client is not in the room.' };
-            }
+            const response = await roomModel.leaveRoom(socket, clientID, roomToken, room);
+            
+            // Send messages to client
+            socket.send(JSON.stringify({ type: 'room-left', response }));
 
-            // Send message to database
-            await roomModel.sendMessage(clientID, roomToken, chatMessage, otherClientID, room)
+            return { error: false, message: 'Client left the room successfully' };
 
-            return { error: false, message: 'Message sent successfully' };
-
-        } catch (error) {
-            socket.send(JSON.stringify({ type: 'error', message: 'Failed to send message.' }));
-            return { error: true, message: 'Failed to send message.' };
+        } catch(error) {
+            console.log('[ SERVER ] Failed to leave room at controller: ' + error);
+            return { error: true, message: 'Failed to leave room.' };
         }
-        
     }
 }
