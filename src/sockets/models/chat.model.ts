@@ -48,7 +48,36 @@ export class chatModel {
             }
 
             // Response
-            return response.rows;
+            if (response.rows[0].user1 === clientID) {
+                try {
+                    const username = await client.query(
+                        'SELECT * FROM users WHERE token=$1',
+                        [response.rows[0].user2]
+                    )
+                    return {
+                        user1: clientID,
+                        user2: username.rows[0].username,
+                        created_at: response.rows[0].created_at,
+                        token: response.rows[0].token
+                    }
+                } catch(error) {
+                    console.log('Error geting username.')
+                }
+            }
+            try {
+                const username = await client.query(
+                    'SELECT * FROM users WHERE username=$1',
+                    [response.rows[0].user2]
+                )
+                return {
+                    user1: username.rows[0].username,
+                    user2: clientID,
+                    created_at: response.rows[0].created_at,
+                    token: response.rows[0].token
+                }
+            } catch(error) {
+                console.log('Error geting username.')
+            }
 
         } catch(error) {
             console.log('[ SERVER ] Failed to get chats at model: ' + error);

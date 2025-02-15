@@ -152,10 +152,6 @@ const router = (wss: Server) => {
                         
                         if (response.error) {
                             socket.send(JSON.stringify({ type: 'error', message: response.message }));
-                        } else {
-                            socket.send(
-                                JSON.stringify({ type: 'sent-message', message: 'Message sent successfully.' })
-                            );
                         }
                         break;
                     }
@@ -175,10 +171,6 @@ const router = (wss: Server) => {
 
                         if (response.error) {
                             socket.send(JSON.stringify({ type: 'error', message: response.message }));
-                        } else {
-                            socket.send(
-                                JSON.stringify({ type: 'checked-token', message: 'Message sent successfully.' })
-                            );
                         }
                         break;
                     }
