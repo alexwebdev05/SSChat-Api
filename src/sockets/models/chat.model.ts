@@ -65,6 +65,7 @@ export class chatModel {
                     // Add data to array
                     chats.push({
                         username: usernameResponse.rows[0].username,
+                        userID: otherUserToken,
                         created_at: chat.created_at,
                         token: chat.token,
                     });
