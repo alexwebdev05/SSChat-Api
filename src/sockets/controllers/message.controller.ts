@@ -25,6 +25,7 @@ export class messageController {
     static getMessages = async (socket: WebSocket, clientID: UUID, otherClientID: UUID): Promise<RoomControllerResponse> => {
         try {
 
+            // Check other client ID
             if (!otherClientID) {
                 socket.send(
                     JSON.stringify({ type: 'error', message: 'Other client ID is required.' })
@@ -36,12 +37,6 @@ export class messageController {
             if (!clientID) {
                 socket.send(JSON.stringify({ type: 'error', message: 'You must connect first.' }));
                 return { error: true, message: 'Client ID is required.' };
-            }
-
-            // Check other client ID
-            if (!otherClientID) {
-                socket.send(JSON.stringify({ type: 'error', message: 'Other client ID is required.' }));
-                return { error: true, message: 'Other client ID is required.' };
             }
 
             // Get messages from database

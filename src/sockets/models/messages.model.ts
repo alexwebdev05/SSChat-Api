@@ -31,6 +31,7 @@ export class messageModel {
             throw error;
         }
 
+        // Logic
         try {
             const response = await client.query(
                 'SELECT * FROM messages WHERE (sender = $1 OR receiver = $1) AND (sender = $2 OR receiver = $2);',

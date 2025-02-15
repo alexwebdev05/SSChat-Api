@@ -5,6 +5,7 @@ import { UUID } from 'crypto';
 import { messageController } from './controllers/message.controller';
 import { roomController } from './controllers/room.controller';
 import { chatController } from './controllers/chat.controller';
+import { userController } from './controllers/user.controller';
 
 import { Client } from './interfaces';
 
@@ -144,7 +145,7 @@ const router = (wss: Server) => {
                     //     "message": "<Message>"    
                     // }
 
-                    case 'send-room-message': {
+                    case 'send-message': {
                         const otherClientID = message.otherClientID;
 
                         const response = await messageController.sendMessage(socket, clientID, message, otherClientID);
@@ -154,6 +155,29 @@ const router = (wss: Server) => {
                         } else {
                             socket.send(
                                 JSON.stringify({ type: 'sent-message', message: 'Message sent successfully.' })
+                            );
+                        }
+                        break;
+                    }
+
+                    // Get info from token
+
+                    // {
+                    //     "type": "check-token",
+                    //     "clientID": "<UUID>",
+                    //     "otherClientID": "<UUID>"
+                    // }
+
+                    case 'check-token': {
+                        const otherClientID = message.otherClientID
+
+                        const response = await userController.checkToken(socket, otherClientID)
+
+                        if (response.error) {
+                            socket.send(JSON.stringify({ type: 'error', message: response.message }));
+                        } else {
+                            socket.send(
+                                JSON.stringify({ type: 'checked-token', message: 'Message sent successfully.' })
                             );
                         }
                         break;
