@@ -64,8 +64,7 @@ export class chatModel {
 
                     // Add data to array
                     chats.push({
-                        user1: chat.user1 === clientID ? clientID : usernameResponse.rows[0].username,
-                        user2: chat.user2 === clientID ? clientID : usernameResponse.rows[0].username,
+                        username: usernameResponse.rows[0].username,
                         created_at: chat.created_at,
                         token: chat.token,
                     });
@@ -80,7 +79,7 @@ export class chatModel {
 
         } catch (error) {
             console.log('[ SERVER ] Failed to get chats at model: ' + error);
-            return { message: 'Error retrieving chats' };
+            return { message: 'Error getting chats' };
         }
     };
 
