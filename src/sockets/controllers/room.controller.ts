@@ -47,7 +47,7 @@ export class roomController {
             const response = await roomModel.joinRoom(socket, clientID, roomToken);
 
             // Send messages to client
-            socket.send(JSON.stringify({ type: 'obtained-messages', response }));
+            socket.send(JSON.stringify({type: 'joined-room', response}));
 
             return { error: false, message: 'Messages retrieved successfully' };
 
@@ -83,7 +83,7 @@ export class roomController {
             const response = await roomModel.leaveRoom(socket, clientID, roomToken, room);
             
             // Send messages to client
-            socket.send(JSON.stringify({ type: 'room-left', response }));
+            socket.send(JSON.stringify({ type: 'left-room', response }));
 
             return { error: false, message: 'Client left the room successfully' };
 

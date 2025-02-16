@@ -55,10 +55,6 @@ const router = (wss: Server) => {
 
                         if (response.error) {
                             socket.send(JSON.stringify({ type: 'error', message: response.message }));
-                        } else {
-                            socket.send(
-                                JSON.stringify({ type: 'joined-room', message: `Joined room successfully.` })
-                            );
                         }
                         break;
                     }
@@ -74,8 +70,6 @@ const router = (wss: Server) => {
                         const response = await roomController.leaveRoom(socket, message)
                         if (response.error) {
                             socket.send(JSON.stringify({ type: 'error', message: response.message }));
-                        } else {
-                            socket.send(JSON.stringify({ type: 'left-room', message: `Left room successfully.` }));
                         }
                         break;
                     }

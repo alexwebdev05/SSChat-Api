@@ -2,16 +2,11 @@ import WebSocket from 'ws';
 import { UUID } from "crypto";
 import { IRoom, Client } from '../interfaces';
 
-type RoomControllerResponse = {
-    error: boolean;
-    message: string;
-};
-
 // Map of active rooms
 const activeRooms: Map<UUID, IRoom> = new Map();
 
 export class roomModel {
-    static joinRoom = async (socket: WebSocket, clientID: UUID, roomToken: UUID): Promise<RoomControllerResponse> => {
+    static joinRoom = async (socket: WebSocket, clientID: UUID, roomToken: UUID) => {
     
         let room = activeRooms.get(roomToken);
         if (!room) {
@@ -34,12 +29,11 @@ export class roomModel {
         });
 
         console.log(`[ SERVER ] Client ${clientID} joined room ${roomToken}`);
-        socket.send(JSON.stringify({ type: 'room-joined', roomToken }));
 
-        return { error: false, message: 'Client joined successfully' };
+        return {message: 'Joined room successful.', roomToken};
     }
 
-    static leaveRoom = async (socket: WebSocket, clientID: UUID, roomToken: UUID, room: IRoom): Promise<RoomControllerResponse> => {
+    static leaveRoom = async (socket: WebSocket, clientID: UUID, roomToken: UUID, room: IRoom) => {
 
     // Remove client from the room
     room.clients = room.clients.filter(client => client.id !== clientID);
@@ -48,9 +42,8 @@ export class roomModel {
     }
 
     console.log(`[ SERVER ] Client ${clientID} left room ${roomToken}`);
-    socket.send(JSON.stringify({ type: 'room-left', roomToken }));
 
-    return { error: false, message: 'Client left the room successfully' };
+    return { message: 'Left room successful.', roomToken };
 
     }
 }
