@@ -20,6 +20,7 @@ export class messageModel {
         try {
             tokenFilter.parse(clientID);
             tokenFilter.parse(otherClientID);
+
         // Handle errors
         } catch (error) {
             if (error instanceof z.ZodError) {
@@ -37,7 +38,6 @@ export class messageModel {
                 'SELECT * FROM messages WHERE (sender = $1 OR receiver = $1) AND (sender = $2 OR receiver = $2);',
                 [clientID, otherClientID]
             )
-
             return response.rows;
         } catch(error) {
             console.log('[ SERVER ] Failed to get messages at model: ' + error);
@@ -71,19 +71,12 @@ export class messageModel {
                 [clientID, otherClientID, chatMessage]
             );
 
-            console.log(`[ SERVER ] Message sent from ${clientID} to ${otherClientID}: ${chatMessage}`);
-
-            room.clients.forEach(async client => {
-                // Send message to all clients in the room
-                client.socket.send(JSON.stringify({ type: 'received-message', response: {
-                    created_at: new Date(),
-                    id: uuidv4(),
-                    message: chatMessage,
-                    receiver: otherClientID,
-                    sender: clientID
-                }
-            }));
-            })
+            return {
+                "created_at": new Date(),
+                "message": chatMessage,
+                "receiver": otherClientID,
+                "sender": clientID
+            }
 
         } catch (error) {
             console.log('[ SERVER ] Failed to send room message at model: ' + error);

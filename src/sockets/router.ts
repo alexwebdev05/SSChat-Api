@@ -132,7 +132,7 @@ const router = (wss: Server) => {
                     // Send room message
 
                     // {
-                    //     "type": "send-room-message",
+                    //     "type": "send-message",
                     //     "clientID": "<UUID>",
                     //     "otherClientID": "<UUID>",
                     //     "roomToken": "<UUID>",

@@ -3,6 +3,8 @@ import { UUID } from "crypto";
 import { IRoom, Client } from '../interfaces';
 import { roomModel } from '../models/room.model';
 
+import { activeRooms } from '../models/room.model';
+
 // Message
 type Message = {
     roomToken: UUID,
@@ -15,9 +17,6 @@ type RoomControllerResponse = {
     error: boolean;
     message: string;
 };
-
-// Map of active rooms
-const activeRooms: Map<UUID, IRoom> = new Map();
 
 export class roomController {
 

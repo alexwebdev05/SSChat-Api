@@ -3,7 +3,7 @@ import { UUID } from "crypto";
 import { IRoom, Client } from '../interfaces';
 
 // Map of active rooms
-const activeRooms: Map<UUID, IRoom> = new Map();
+export const activeRooms: Map<UUID, IRoom> = new Map();
 
 export class roomModel {
     static joinRoom = async (socket: WebSocket, clientID: UUID, roomToken: UUID) => {

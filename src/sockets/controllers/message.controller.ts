@@ -3,6 +3,8 @@ import { UUID } from "crypto";
 import { IRoom, Client } from '../interfaces';
 import { messageModel } from '../models/messages.model';
 
+import { activeRooms } from '../models/room.model';
+
 // Message
 type Message = {
     roomToken: UUID,
@@ -16,8 +18,7 @@ type RoomControllerResponse = {
     message: string;
 };
 
-// Map of active rooms
-const activeRooms: Map<UUID, IRoom> = new Map();
+
 
 export class messageController {
     
@@ -43,7 +44,7 @@ export class messageController {
             const response = await messageModel.getMessages(clientID, otherClientID);
 
             // Send messages to client
-            socket.send(JSON.stringify({ type: 'obtained-messages', response }));
+            socket.send(JSON.stringify({ type: 'obtained-messages', userID: otherClientID, response }));
 
             return { error: false, message: 'Messages retrieved successfully' };
         } catch(error) {
@@ -62,13 +63,12 @@ export class messageController {
                 );
                 return { error: true, message: 'Other client ID is required.' };
             }
-
+            
             // Check client ID
             if (!clientID) {
                 socket.send(JSON.stringify({ type: 'error', message: 'You must connect first.' }));
                 return { error: true, message: 'ClientID is required.' };
             }
-
             // Check room ID and message
             const { roomToken, message: chatMessage } = message;
             if (!roomToken || !chatMessage) {
@@ -91,7 +91,12 @@ export class messageController {
             }
 
             // Send message to database
-            await messageModel.sendMessage(clientID, roomToken, chatMessage, otherClientID, room)
+            const response = await messageModel.sendMessage(clientID, roomToken, chatMessage, otherClientID, room)
+            room.clients.forEach(client => {
+                if (client.id !== clientID) {
+                    client.socket.send(JSON.stringify({ type: 'received-message', response }));
+                }
+            });
 
             return { error: false, message: 'Message sent successfully' };
 
