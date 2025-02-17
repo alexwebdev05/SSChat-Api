@@ -63,7 +63,7 @@ export class messageController {
                 );
                 return { error: true, message: 'Other client ID is required.' };
             }
-            
+
             // Check client ID
             if (!clientID) {
                 socket.send(JSON.stringify({ type: 'error', message: 'You must connect first.' }));
@@ -97,7 +97,6 @@ export class messageController {
                     client.socket.send(JSON.stringify({ type: 'received-message', response }));
                 }
             });
-
             return { error: false, message: 'Message sent successfully' };
 
         } catch (error) {

@@ -70,7 +70,12 @@ export class messageModel {
                 'INSERT INTO messages (sender, receiver, message) VALUES ($1, $2, $3)',
                 [clientID, otherClientID, chatMessage]
             );
-
+            console.log({
+                "created_at": new Date(),
+                "message": chatMessage,
+                "receiver": otherClientID,
+                "sender": clientID
+            })
             return {
                 "created_at": new Date(),
                 "message": chatMessage,
