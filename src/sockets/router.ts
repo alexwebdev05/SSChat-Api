@@ -119,6 +119,7 @@ const router = (wss: Server) => {
 
                     case 'get-messages': {
                         const otherClientID = message.otherClientID;
+                        const id = message.id
 
                         const response = await messageController.getMessages(socket, clientID, otherClientID);
 
@@ -141,8 +142,9 @@ const router = (wss: Server) => {
 
                     case 'send-message': {
                         const otherClientID = message.otherClientID;
+                        const id = message.id
 
-                        const response = await messageController.sendMessage(socket, clientID, message, otherClientID);
+                        const response = await messageController.sendMessage(socket, clientID, message, otherClientID, id);
                         
                         if (response.error) {
                             socket.send(JSON.stringify({ type: 'error', message: response.message }));
