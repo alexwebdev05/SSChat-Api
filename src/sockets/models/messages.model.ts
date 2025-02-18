@@ -50,8 +50,6 @@ export class messageModel {
 
         const client = await dbConnect();
 
-        console.log('step 3')
-
         // Filters
         try {
             tokenFilter.parse(clientID);
@@ -75,7 +73,7 @@ export class messageModel {
                 'INSERT INTO messages (id, sender, receiver, message) VALUES ($1, $2, $3, $4)',
                 [id, clientID, otherClientID, chatMessage]
             );
-            console.log('step 4')
+            
             return {
                 "id": id,
                 "created_at": new Date(),

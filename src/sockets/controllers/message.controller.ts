@@ -56,7 +56,7 @@ export class messageController {
     // Send message
     static sendMessage = async (socket: WebSocket, clientID: UUID, message: Message, otherClientID: UUID, id: UUID): Promise<RoomControllerResponse> => {
         try {
-            console.log('step 1')
+
             // Validate ID
             if (!id) {
                 socket.send(JSON.stringify({ type: 'error', message: 'Id is required.' }));
@@ -100,9 +100,7 @@ export class messageController {
             // Send message to database
             let response;
             try {
-                console.log('step 2')
                 response = await messageModel.sendMessage(clientID, roomToken, chatMessage, otherClientID, room, id);
-                console.log('step 5')
             } catch (error) {
                 console.error("Database error:", error);
                 socket.send(JSON.stringify({ type: 'error', message: 'Failed to save message to database.' }));
