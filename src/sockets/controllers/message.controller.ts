@@ -57,29 +57,29 @@ export class messageController {
     static sendMessage = async (socket: WebSocket, clientID: UUID, message: Message, otherClientID: UUID): Promise<RoomControllerResponse> => {
         try {
 
+            // Validate otherClientID
             if (!otherClientID) {
-                socket.send(
-                    JSON.stringify({ type: 'error', message: 'Other client ID is required.' })
-                );
+                socket.send(JSON.stringify({ type: 'error', message: 'Other client ID is required.' }));
                 return { error: true, message: 'Other client ID is required.' };
             }
 
-            // Check client ID
+            // Validate clientID
             if (!clientID) {
                 socket.send(JSON.stringify({ type: 'error', message: 'You must connect first.' }));
                 return { error: true, message: 'ClientID is required.' };
             }
-            // Check room ID and message
-            const { roomToken, message: chatMessage } = message;
-            if (!roomToken || !chatMessage) {
+
+            // Validate message structure
+            if (!message || !message.roomToken || !message.message) {
                 socket.send(JSON.stringify({ type: 'error', message: 'Room ID and message are required.' }));
-                return { error: true, message: 'roomToken is required.' };
+                return { error: true, message: 'Room ID and message are required.' };
             }
+
+            const { roomToken, message: chatMessage } = message;
 
             // Check if room exists
             let room = activeRooms.get(roomToken);
             if (!room) {
-                room = { id: roomToken, clients: [] as Client[] };
                 socket.send(JSON.stringify({ type: 'error', message: 'Room does not exist.' }));
                 return { error: true, message: 'Room does not exist.' };
             }
@@ -87,22 +87,33 @@ export class messageController {
             // Check if the client is in the room
             const isInRoom = room.clients.find((client) => client.id === clientID);
             if (!isInRoom) {
+                socket.send(JSON.stringify({ type: 'error', message: 'Client is not in the room.' }));
                 return { error: true, message: 'Client is not in the room.' };
             }
-
+            
             // Send message to database
-            const response = await messageModel.sendMessage(clientID, roomToken, chatMessage, otherClientID, room)
+            let response;
+            try {
+                response = await messageModel.sendMessage(clientID, roomToken, chatMessage, otherClientID, room);
+            } catch (error) {
+                console.error("Database error:", error);
+                socket.send(JSON.stringify({ type: 'error', message: 'Failed to save message to database.' }));
+                return { error: true, message: 'Failed to save message to database.' };
+            }
+
+            // Notify other clients in the room
             room.clients.forEach(client => {
-                if (client.id !== clientID) {
+                if (client.id !== clientID && client.socket.readyState === WebSocket.OPEN) {
                     client.socket.send(JSON.stringify({ type: 'received-message', response }));
                 }
             });
+
             return { error: false, message: 'Message sent successfully' };
 
         } catch (error) {
-            socket.send(JSON.stringify({ type: 'error', message: 'Failed to send message.' }));
-            return { error: true, message: 'Failed to send message.' };
+            console.error("[SERVER] Unexpected error in sendMessage:", error);
+            socket.send(JSON.stringify({ type: 'error', message: 'Failed to send message due to an unexpected error.' }));
+            return { error: true, message: 'Failed to send message due to an unexpected error.' };
         }
-        
-    }
+    };
 }
