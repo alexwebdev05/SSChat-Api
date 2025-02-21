@@ -5,13 +5,27 @@ import { create } from "domain";
 export class chatModel {
 
     // Create chat
-    static createChat = async (clientID: UUID, otherClientID: UUID) => {
+    static createChat = async (clientID: UUID, otherClientID: string) => {
         const client = await dbConnect();
 
         try {
+
+            // get otherUser token
+            const otherUserTokenQuery = await client.query(
+                'SELECT token FROM users WHERE username = $1',
+                [otherClientID]
+            )
+
+            // Handle errors
+            if (otherUserTokenQuery.rows.length === 0) {
+                return { message: 'Failed to get otherUserToken' };
+            }
+
+            const otherUserToken = otherUserTokenQuery.rows[0].token
+
             const response = await client.query(
                 'INSERT INTO chats (user1, user2) VALUES ($1, $2) RETURNING *',
-                [clientID, otherClientID]
+                [clientID, otherUserToken]
             )
 
             // Handle errors
@@ -27,7 +41,7 @@ export class chatModel {
                 created_at: response.rows[0].created_at
             }
 
-        } catch(error) {
+        } catch (error) {
             console.log('[ SERVER ] Failed to create chat at model: ' + error);
         }
     }
@@ -83,6 +97,5 @@ export class chatModel {
             return { message: 'Error getting chats' };
         }
     };
-
 
 }

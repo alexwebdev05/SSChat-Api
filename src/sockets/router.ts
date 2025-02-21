@@ -41,13 +41,12 @@ const router = (wss: Server) => {
                         break;
                     }
 
-
                     // Join room
 
                     // {
-                    //     "type": "join-room",
-                    //     "roomToken": "<UUID>",
-                    //     "clientID": "<UUID>"
+                    // "type": "join-room",
+                    // "roomToken": "<UUID>",
+                    // "clientID": "<UUID>"
                     // }
 
                     case 'join-room': {
@@ -61,9 +60,9 @@ const router = (wss: Server) => {
 
                     // Leave room
                     // {
-                    //     "type": "leave-room",
-                    //     "roomToken": "<UUID>",
-                    //     "clientID": "<UUID>"
+                    // "type": "leave-room",
+                    // "roomToken": "<UUID>",
+                    // "clientID": "<UUID>"
                     // }
 
                     case 'leave-room': {
@@ -77,14 +76,13 @@ const router = (wss: Server) => {
                     // Create chat
 
                     // {
-                    //     "type": "create-chat",
-                    //     "clientID": "<UUID>",
-                    //     "otherClientID": "<UUID>"
+                    // "type": "create-chat",
+                    // "clientID": "<UUID>",
+                    // "otherClientID": "<UUID>"
                     // }
 
                     case 'create-chat': {
                         const otherClientID = message.otherClientID;
-
                         const response = await chatController.createChat(socket, clientID, otherClientID);
 
                         if (response.error) {
@@ -96,8 +94,8 @@ const router = (wss: Server) => {
                     // Get chats
 
                     // {
-                    //     "type": "get-chats",
-                    //     "clientID": "<UUID>",
+                    // "type": "get-chats",
+                    // "clientID": "<UUID>",
                     // }
 
                     case 'get-chats': {
@@ -112,9 +110,9 @@ const router = (wss: Server) => {
                     // Get messages
 
                     // {
-                    //     "type": "get-messages",
-                    //     "clientID": "<UUID>",
-                    //     "otherClientID": "<UUID>"
+                    // "type": "get-messages",
+                    // "clientID": "<UUID>",
+                    // "otherClientID": "<UUID>"
                     // }
 
                     case 'get-messages': {
@@ -129,15 +127,14 @@ const router = (wss: Server) => {
                         break;
                     }
 
-
                     // Send room message
 
                     // {
-                    //     "type": "send-message",
-                    //     "clientID": "<UUID>",
-                    //     "otherClientID": "<UUID>",
-                    //     "roomToken": "<UUID>",
-                    //     "message": "<Message>"    
+                    // "type": "send-message",
+                    // "clientID": "<UUID>",
+                    // "otherClientID": "<UUID>",
+                    // "roomToken": "<UUID>",
+                    // "message": "<Message>" 
                     // }
 
                     case 'send-message': {
@@ -145,7 +142,6 @@ const router = (wss: Server) => {
                         const id = message.id
 
                         const response = await messageController.sendMessage(socket, clientID, message, otherClientID, id);
-                        
                         if (response.error) {
                             socket.send(JSON.stringify({ type: 'error', message: response.message }));
                         }
@@ -155,9 +151,9 @@ const router = (wss: Server) => {
                     // Get info from token
 
                     // {
-                    //     "type": "check-token",
-                    //     "clientID": "<UUID>",
-                    //     "otherClientID": "<UUID>"
+                    // "type": "check-token",
+                    // "clientID": "<UUID>",
+                    // "otherClientID": "<UUID>"
                     // }
 
                     case 'check-token': {

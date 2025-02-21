@@ -1,3 +1,4 @@
+
 import { UUID } from "crypto";
 import WebSocket from 'ws';
 import { z } from "zod";
@@ -19,7 +20,7 @@ const tokenFilter = z
 export class chatController {
 
     // Create chat
-    static createChat = async (socket: WebSocket, clientID: UUID, otherClientID: UUID): Promise<RoomControllerResponse> => {
+    static createChat = async (socket: WebSocket, clientID: UUID, otherClientID: string): Promise<RoomControllerResponse> => {
         try {
 
             // Check client ID
@@ -36,7 +37,6 @@ export class chatController {
 
             // Check UUID
             tokenFilter.parse(clientID);
-            tokenFilter.parse(otherClientID);
 
             // Create chat
             const response = await chatModel.createChat(clientID, otherClientID);
@@ -46,7 +46,7 @@ export class chatController {
 
             return { error: false, message: 'Chat created successfully.' };
 
-        } catch(error) {
+        } catch (error) {
             console.log('[ SERVER ] Failed to create chat at controller: ' + error);
             return { error: true, message: 'Failed to create chat.' };
         }
@@ -73,7 +73,7 @@ export class chatController {
 
             return { error: false, message: 'Chats retrieved successfully' };
 
-        } catch(error) {
+        } catch (error) {
             console.log('[ SERVER ] Failed to get chats at controller: ' + error);
             return { error: true, message: 'Failed to get chats.' };
         }
