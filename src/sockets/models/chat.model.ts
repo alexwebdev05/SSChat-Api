@@ -79,7 +79,7 @@ export class chatModel {
 
                     // Get las message
                     const lastMsg = await client.query(
-                        'SELECT * FROM messages WHERE sender = $1 ORDER BY created_at DESC LIMIT 1',
+                        'SELECT * FROM messages WHERE sender = $1 OR receiver = $1 ORDER BY created_at DESC LIMIT 1',
                         [otherUserToken]
                     )
 
@@ -88,7 +88,7 @@ export class chatModel {
                         message: lastMsg.rows[0].message,
                         created_at: lastMsg.rows[0].created_at
                     }
-                    : { message: 'No messages yet', created_at: null };
+                    : { message: '', created_at: null };
 
                     // Add data to array
                     chats.push({
