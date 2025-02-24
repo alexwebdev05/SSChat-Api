@@ -1,6 +1,5 @@
 import { UUID } from "crypto";
 import { dbConnect } from "../../conf/db";
-import { create } from "domain";
 
 export class chatModel {
 
@@ -51,6 +50,8 @@ export class chatModel {
         const client = await dbConnect();
 
         try {
+
+            // Get chats
             const response = await client.query(
                 'SELECT * FROM chats WHERE user1 = $1 OR user2 = $1',
                 [clientID]
@@ -76,12 +77,26 @@ export class chatModel {
                         [otherUserToken]
                     );
 
+                    // Get las message
+                    const lastMsg = await client.query(
+                        'SELECT * FROM messages WHERE sender = $1 ORDER BY created_at DESC LIMIT 1',
+                        [otherUserToken]
+                    )
+
+                    const lastMessage = lastMsg.rows.length > 0
+                    ? {
+                        message: lastMsg.rows[0].message,
+                        created_at: lastMsg.rows[0].created_at
+                    }
+                    : { message: 'No messages yet', created_at: null };
+
                     // Add data to array
                     chats.push({
                         username: usernameResponse.rows[0].username,
                         userID: otherUserToken,
                         created_at: chat.created_at,
                         token: chat.token,
+                        lastMessage
                     });
 
                 } catch (error) {
