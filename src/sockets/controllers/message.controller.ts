@@ -45,7 +45,7 @@ export class messageController {
 
             // Send messages to client
             socket.send(JSON.stringify({ type: 'obtained-messages', userID: otherClientID, response }));
-
+            console.log('messages had been requested succesfully')
             return { error: false, message: 'Messages retrieved successfully' };
         } catch(error) {
             console.log('[ SERVER ] Failed to get messages at controller: ' + error);
@@ -56,7 +56,6 @@ export class messageController {
     // Send message
     static sendMessage = async (socket: WebSocket, clientID: UUID, message: Message, otherClientID: UUID, id: UUID): Promise<RoomControllerResponse> => {
         try {
-
             // Validate ID
             if (!id) {
                 socket.send(JSON.stringify({ type: 'error', message: 'Id is required.' }));
@@ -85,6 +84,7 @@ export class messageController {
 
             // Check if room exists
             let room = activeRooms.get(roomToken);
+
             if (!room) {
                 socket.send(JSON.stringify({ type: 'error', message: 'Room does not exist.' }));
                 return { error: true, message: 'Room does not exist.' };
@@ -96,24 +96,28 @@ export class messageController {
                 socket.send(JSON.stringify({ type: 'error', message: 'Client is not in the room.' }));
                 return { error: true, message: 'Client is not in the room.' };
             }
-            
+            console.log('a')
             // Send message to database
             let response;
             try {
+                console.log('b')
                 response = await messageModel.sendMessage(clientID, roomToken, chatMessage, otherClientID, room, id);
+                console.log('f')
+
             } catch (error) {
                 console.error("Database error:", error);
                 socket.send(JSON.stringify({ type: 'error', message: 'Failed to save message to database.' }));
                 return { error: true, message: 'Failed to save message to database.' };
             }
-
+            console.log('g')
             // Notify other clients in the room
             room.clients.forEach(client => {
                 if (client.id !== clientID && client.socket.readyState === WebSocket.OPEN) {
                     client.socket.send(JSON.stringify({ type: 'received-message', response }));
                 }
             });
-
+            console.log('h')
+            console.log('sendMessage just sended a message to other client')
             return { error: false, message: 'Message sent successfully' };
 
         } catch (error) {

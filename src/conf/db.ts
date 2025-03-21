@@ -10,15 +10,24 @@ const pool = new Pool({
 
 // Export pool
 export const dbConnect = async () => {
-
+    console.log('1');
     // Connect to the database
+    let client;
     try {
-        const client = await pool.connect();
+        console.log('2');
+        client = await pool.connect();
+        console.log('3');
         return client;
 
     // Handle connection error
     } catch (error) {
         console.error('Error connecting to database:', error);
-        process.exit(1);
+        throw error;
+    } finally {
+        // Ensure client is defined before attempting to release
+        if (client) {
+            client.release();
+        }
     }
 };
+

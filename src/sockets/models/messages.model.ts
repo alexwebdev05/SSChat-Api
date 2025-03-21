@@ -49,6 +49,7 @@ export class messageModel {
     static sendMessage = async (clientID: UUID, roomToken: UUID, chatMessage: string, otherClientID: UUID, room: IRoom, id: UUID) => {
 
         const client = await dbConnect();
+        console.log('c')
 
         // Filters
         try {
@@ -66,6 +67,7 @@ export class messageModel {
             }
             throw error;
         }
+        console.log('d')
         
         try {
             // Insert message to database
@@ -73,6 +75,7 @@ export class messageModel {
                 'INSERT INTO messages (id, sender, receiver, message) VALUES ($1, $2, $3, $4)',
                 [id, clientID, otherClientID, chatMessage]
             );
+            console.log('e')
             
             return {
                 "id": id,
