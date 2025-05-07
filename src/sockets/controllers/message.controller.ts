@@ -96,27 +96,26 @@ export class messageController {
                 socket.send(JSON.stringify({ type: 'error', message: 'Client is not in the room.' }));
                 return { error: true, message: 'Client is not in the room.' };
             }
-            console.log('a')
+
             // Send message to database
             let response;
             try {
-                console.log('b')
+
                 response = await messageModel.sendMessage(clientID, roomToken, chatMessage, otherClientID, room, id);
-                console.log('f')
 
             } catch (error) {
                 console.error("Database error:", error);
                 socket.send(JSON.stringify({ type: 'error', message: 'Failed to save message to database.' }));
                 return { error: true, message: 'Failed to save message to database.' };
             }
-            console.log('g')
+
             // Notify other clients in the room
             room.clients.forEach(client => {
                 if (client.id !== clientID && client.socket.readyState === WebSocket.OPEN) {
                     client.socket.send(JSON.stringify({ type: 'received-message', response }));
                 }
             });
-            console.log('h')
+            
             console.log('sendMessage just sended a message to other client')
             return { error: false, message: 'Message sent successfully' };
 

@@ -10,13 +10,10 @@ const pool = new Pool({
 
 // Export pool
 export const dbConnect = async () => {
-    console.log('1');
     // Connect to the database
     let client;
     try {
-        console.log('2');
         client = await pool.connect();
-        console.log('3');
         return client;
 
     // Handle connection error
